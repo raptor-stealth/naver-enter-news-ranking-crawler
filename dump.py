@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import json
+import re
 from openai import OpenAI
 from typing import List, Dict
 
@@ -15,20 +16,28 @@ from selenium_utils import (
 )
 
 
+def remove_text_in_brackets(text):
+    pattern = r'\[.*?\]'
+    cleaned_text = re.sub(pattern, '', text)
+
+    return cleaned_text
+
+
 def parse_article(
     article: bs4.element.Tag,
 ) -> Dict[str, str]:
-    rank = article.select("div > span > em")[0].text.strip()
-    title = article.select("div > a")[0].text.strip()
-    snippet = article.select("div > p")[0].text.strip()
-    url = article.select("div > a")[0].get("href").strip()
-    thumbnail = article.select("a > img")[0].get("src").strip()
+    rank = article.select("div > span > em")[0].text
+    title = article.select("div > a")[0].text
+    snippet = article.select("div > p")[0].text
+    url = article.select("div > a")[0].get("href")
+    thumbnail = article.select("a > img")[0].get("src")
+    title = remove_text_in_brackets(title)
     return {
-        "rank": rank,
-        "title": title,
-        "snippet": snippet,
-        "url": url,
-        "thumbnail": thumbnail,
+        "rank": rank.strip() if rank else "",
+        "title": title.strip() if title else "",
+        "snippet": snippet.strip() if snippet else "",
+        "url": url.strip() if url else "",
+        "thumbnail": thumbnail.strip() if thumbnail else "",
     }
 
 
