@@ -19,14 +19,16 @@ def parse_article(
     article: bs4.element.Tag,
 ) -> Dict[str, str]:
     rank = article.select("div > span > em")[0].text.strip()
-    thumbnail = article.select("a > img")[0].get("src").strip()
     title = article.select("div > a")[0].text.strip()
     snippet = article.select("div > p")[0].text.strip()
+    url = article.select("div > a")[0].get("href").strip()
+    thumbnail = article.select("a > img")[0].get("src").strip()
     return {
         "rank": rank,
-        "thumbnail": thumbnail,
         "title": title,
         "snippet": snippet,
+        "url": url,
+        "thumbnail": thumbnail,
     }
 
 
