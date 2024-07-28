@@ -1,15 +1,27 @@
 import selenium
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
+from selenium import webdriver
+
 
 
 def load_chrome_driver(
     headless=True,
-) -> selenium.webdriver.chrome.webdriver.WebDriver:
-    options = selenium.webdriver.ChromeOptions()
+) -> webdriver.chrome.webdriver.WebDriver:
+    from webdriver_manager.chrome import ChromeDriverManager
+    options = webdriver.ChromeOptions()
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     if headless is True:
         options.add_argument("headless")
-    driver = selenium.webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    service = selenium.webdriver.chrome.service.Service(ChromeDriverManager().install())
+    driver = selenium.webdriver.Chrome(service=service, options=options)
+    return driver
+
+
+def load_firefox_driver(
+    headless=True,
+):
+    options = webdriver.firefox.options.Options()
+    if headless is True:
+        options.headless = True
+    driver = webdriver.Firefox(executable_path="./geckodriver", options=options)
     return driver

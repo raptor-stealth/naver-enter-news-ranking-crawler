@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 from tqdm import tqdm
 
 from selenium_utils import (
-    load_chrome_driver,
+    load_firefox_driver,
 )
 
 
@@ -43,7 +43,7 @@ def parse_article(
 
 def generate_query_with_openai(
     articles: List[Dict[str, str]],
-    model_name: str = "gpt-3.5-turbo",
+    model_name: str = "gpt-4o-mini-2024-07-18",
 ) -> List[Dict[str, str]]:
     def build_prompt(article):
         prompt = ""
@@ -73,8 +73,7 @@ def generate_query_with_openai(
 def parse_html(
     driver: selenium.webdriver.chrome.webdriver.WebDriver,
     url: str,
-):
-    now = datetime.now().strftime("%y%m%d-%H%M%S")
+) -> List[Dict[str, str]]:
 
     driver.get(url)
     left_cont = driver.find_element(By.CLASS_NAME, "left_cont")
@@ -83,12 +82,26 @@ def parse_html(
     articles = soup.select("ul > li")
     articles = [parse_article(article) for article in articles]
     articles = generate_query_with_openai(articles)
-    json.dump(articles, open(now+".json", "w"), ensure_ascii=False, indent=4)
+    return articles
+
+
+def main():
+    URL = "https://entertain.naver.com/ranking"
+    # URL = "https://entertain.naver.com/ranking/five"
+    output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+
+    driver = load_firefox_driver(headless=True)
+    articles = parse_html(driver, URL)
+
+    now = datetime.now().strftime("%y%m%d-%H%M%S")
+    print(now)
+    output_file_path = os.path.join(output_dir, now + ".json")
+    with open(output_file_path, "w") as f:
+        json.dump(articles, f, ensure_ascii=False, indent=4)
+    latest_file_path = os.path.join(output_dir, "latest.json")
+    with open(latest_file_path, "w") as f:
+        json.dump(articles, f, ensure_ascii=False, indent=4)
 
 
 if __name__ == "__main__":
-    URL = "https://entertain.naver.com/ranking"
-    # URL = "https://entertain.naver.com/ranking/five"
-
-    driver = load_chrome_driver(headless=False)
-    parse_html(driver, URL)
+    main()
